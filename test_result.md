@@ -101,3 +101,86 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the Snake & Ladder game: 1. Verify the app loads and shows the 'Snake & Ladder' title on the start screen. 2. Select 2 players and enter names 'Alice' and 'Bob'. 3. Click 'START GAME'. 4. Verify the board appears and 'Alice' is the first player. 5. Click 'ROLL DICE' and verify the dice rolls and the player moves (log updates). 6. Verify the turn switches to 'Bob'."
+
+frontend:
+  - task: "Snake & Ladder Game UI Loading"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/PlayerSetup.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial testing - need to verify app loads and shows Snake & Ladder title on start screen"
+
+  - task: "Player Setup and Name Entry"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/PlayerSetup.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test selecting 2 players and entering names Alice and Bob"
+
+  - task: "Game Board Display"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Board.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify board appears after START GAME and Alice is first player"
+
+  - task: "Dice Rolling and Player Movement"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Dice.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test dice rolling, player movement, and log updates"
+
+  - task: "Turn Management"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify turn switches from Alice to Bob after dice roll"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+
+test_plan:
+  current_focus:
+    - "Snake & Ladder Game UI Loading"
+    - "Player Setup and Name Entry"
+    - "Game Board Display"
+    - "Dice Rolling and Player Movement"
+    - "Turn Management"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "sequential"
+
+agent_communication:
+  - agent: "testing"
+    message: "Starting comprehensive testing of Snake & Ladder game based on user review request. Will test UI loading, player setup, game board, dice rolling, and turn management in sequence."
