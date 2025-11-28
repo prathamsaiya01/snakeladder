@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GAME_LADDERS, GAME_SNAKES } from '../config/gameConfig';
 import { cn } from '../lib/utils';
@@ -64,36 +64,59 @@ const Board = ({ players }) => {
       </div>
 
       {/* Snakes and Ladders SVG Layer */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 opacity-80">
+      {/* Using viewBox 0 0 100 100 to map easily to the 10x10 grid percentages */}
+      <svg 
+        className="absolute inset-0 w-full h-full pointer-events-none z-10 opacity-90" 
+        viewBox="0 0 100 100" 
+        preserveAspectRatio="none"
+      >
         <defs>
-          <marker id="arrowhead" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
-            <polygon points="0 0, 6 2, 0 4" fill="#22c55e" />
-          </marker>
+          {/* Gradient for Snakes */}
+          <linearGradient id="snakeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" />
+            <stop offset="50%" stopColor="#dc2626" />
+            <stop offset="100%" stopColor="#991b1b" />
+          </linearGradient>
+          
+          {/* Pattern for Ladders */}
+          <pattern id="ladderPattern" width="2" height="2" patternUnits="userSpaceOnUse">
+             <line x1="0" y1="0" x2="0" y2="2" stroke="#22c55e" strokeWidth="0.5" />
+          </pattern>
         </defs>
         
         {/* Ladders */}
         {GAME_LADDERS.map((ladder, idx) => {
           const start = getCoordinates(ladder.start);
           const end = getCoordinates(ladder.end);
-          const x1 = `${(start.col + 0.5) * 10}%`;
-          const y1 = `${(start.row + 0.5) * 10}%`;
-          const x2 = `${(end.col + 0.5) * 10}%`;
-          const y2 = `${(end.row + 0.5) * 10}%`;
+          
+          // Coordinates in 0-100 space
+          const x1 = (start.col + 0.5) * 10;
+          const y1 = (start.row + 0.5) * 10;
+          const x2 = (end.col + 0.5) * 10;
+          const y2 = (end.row + 0.5) * 10;
           
           return (
             <g key={`ladder-${idx}`}>
+              {/* Rails */}
+              <line 
+                x1={x1 - 1.5} y1={y1} x2={x2 - 1.5} y2={y2} 
+                stroke="#22c55e" 
+                strokeWidth="0.8" 
+                strokeLinecap="round"
+              />
+              <line 
+                x1={x1 + 1.5} y1={y1} x2={x2 + 1.5} y2={y2} 
+                stroke="#22c55e" 
+                strokeWidth="0.8" 
+                strokeLinecap="round"
+              />
+              {/* Rungs - simplified as a thick dashed line in the middle for visual effect */}
               <line 
                 x1={x1} y1={y1} x2={x2} y2={y2} 
                 stroke="#22c55e" 
-                strokeWidth="4" 
-                strokeLinecap="round"
-                strokeDasharray="4 2"
-              />
-              <line 
-                x1={x1} y1={y1} x2={x2} y2={y2} 
-                stroke="rgba(34, 197, 94, 0.3)" 
-                strokeWidth="12" 
-                strokeLinecap="round"
+                strokeWidth="3" 
+                strokeDasharray="1 1"
+                opacity="0.5"
               />
             </g>
           );
@@ -101,27 +124,60 @@ const Board = ({ players }) => {
 
         {/* Snakes */}
         {GAME_SNAKES.map((snake, idx) => {
-          const start = getCoordinates(snake.start);
-          const end = getCoordinates(snake.end);
+          const start = getCoordinates(snake.start); // Head
+          const end = getCoordinates(snake.end);     // Tail
+          
           const x1 = (start.col + 0.5) * 10;
           const y1 = (start.row + 0.5) * 10;
           const x2 = (end.col + 0.5) * 10;
           const y2 = (end.row + 0.5) * 10;
           
-          // Create a curvy path for the snake
-          const midX = (x1 + x2) / 2 + (Math.random() > 0.5 ? 5 : -5);
+          // Control points for a wavy S-curve
+          // We calculate a midpoint and offset it to create a curve
+          const midX = (x1 + x2) / 2;
           const midY = (y1 + y2) / 2;
+          
+          // Direction vector
+          const dx = x2 - x1;
+          const dy = y2 - y1;
+          const len = Math.sqrt(dx*dx + dy*dy);
+          
+          // Normal vector (perpendicular)
+          const nx = -dy / len;
+          const ny = dx / len;
+          
+          // Amplitude of the curve
+          const amp = 5; 
+          
+          // Control point 1
+          const cp1x = midX + nx * amp;
+          const cp1y = midY + ny * amp;
+
+          // For a more complex wiggle, we could use a cubic bezier or multiple Qs
+          // Simple Quadratic: M start Q cp end
           
           return (
             <g key={`snake-${idx}`}>
+              {/* Snake Body */}
               <path
-                d={`M ${x1}% ${y1}% Q ${midX}% ${midY}% ${x2}% ${y2}%`}
-                stroke="#ef4444"
-                strokeWidth="4"
+                d={`M ${x1} ${y1} Q ${cp1x} ${cp1y} ${x2} ${y2}`}
+                stroke="url(#snakeGradient)"
+                strokeWidth="2.5"
                 fill="none"
                 strokeLinecap="round"
+                className="drop-shadow-sm"
               />
-              <circle cx={`${x1}%`} cy={`${y1}%`} r="1.5%" fill="#ef4444" />
+              
+              {/* Snake Head (Start) */}
+              <circle cx={x1} cy={y1} r="2" fill="#ef4444" />
+              {/* Eyes */}
+              <circle cx={x1 - 0.6} cy={y1 - 0.5} r="0.5" fill="white" />
+              <circle cx={x1 + 0.6} cy={y1 - 0.5} r="0.5" fill="white" />
+              <circle cx={x1 - 0.6} cy={y1 - 0.5} r="0.2" fill="black" />
+              <circle cx={x1 + 0.6} cy={y1 - 0.5} r="0.2" fill="black" />
+              
+              {/* Snake Tail (End) - small taper */}
+              <circle cx={x2} cy={y2} r="0.8" fill="#991b1b" />
             </g>
           );
         })}
@@ -133,7 +189,6 @@ const Board = ({ players }) => {
           {players.map((player, index) => {
             const coords = getCoordinates(player.position);
             // Offset players slightly if they are on the same tile so they don't overlap perfectly
-            // We can use the player index to create a small offset
             const offsetMap = [
               { x: -15, y: -15 },
               { x: 15, y: -15 },
